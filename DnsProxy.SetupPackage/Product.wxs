@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product  Id="*" 
+            Name="Dns Proxy For Hyper-V" 
+            Language="1033" 
+            Version="!(bind.FileVersion.DnsProxyService.exe)" 
+            Manufacturer="Roman Tumaykin" 
+            UpgradeCode="3157c456-81cc-424c-a0ee-d5134bb25a11">
+		<Package InstallerVersion="200" 
+             Compressed="yes" 
+             InstallScope="perMachine" 
+             Description="Dns Proxy For Hyper-V Installer" 
+             Manufacturer="Roman Tumaykin" 
+             Keywords="Installation Package for Dns Proxy For Hyper-V" 
+             Comments="This DNS service listens to the client requests and uses Host's resolver to return responses. Used in conjunction with the NAT virtual switch for Hyper-V which does not provide DNS resolution." 
+    />
+
+    <Icon Id="icon.ico" SourceFile="$(var.DnsProxy.Service.TargetDir)\dns.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+    
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate />
+
+		<Feature Id="ProductFeature" Title="Simple Dns Proxy" Level="1" >
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="DnsProxy" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+			<Component Id="ProductComponent" Guid="d3f71074-a1b1-44a3-acaf-bed27d967f17">
+        <File Source="$(var.DnsProxy.Service.TargetPath)" />
+        <File Id="ConfigFile" Source="$(var.DnsProxy.Service.TargetDir)\DnsProxyService.exe.config" />
+        <File Source="$(var.DnsProxy.Service.TargetDir)\ARSoft.Tools.Net.dll" />
+        <File Source="$(var.DnsProxy.Service.TargetDir)\BouncyCastle.Crypto.dll" />
+        <ServiceInstall Id="ServiceInstaller"
+                        Type="ownProcess"
+                        Vital="yes"
+                        Name="RomanTumaykin:DnsProxy"
+                        DisplayName="Dns Proxy For Hyper-V"
+                        Description="This DNS service listens to the client requests and uses Host's resolver to return responses. Used in conjunction with the NAT virtual switch for Hyper-V which does not provide DNS resolution."
+                        Start="auto"
+                        Account="LocalSystem"
+                        ErrorControl="ignore"
+                        Interactive="no"/>
+        <ServiceControl Id="StartService"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall"
+                        Name="RomanTumaykin:DnsProxy"
+                        Wait="yes"/>
+      </Component>
+		</ComponentGroup>
+	</Fragment>
+</Wix>
