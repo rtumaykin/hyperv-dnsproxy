@@ -104,7 +104,9 @@
                         Start="auto"
                         Account="LocalSystem"
                         ErrorControl="ignore"
-                        Interactive="no"/>
+                        Interactive="no">
+                        <ServiceDependency Id="HvHost"/>
+        </ServiceInstall>
         <ServiceControl Id="StartService"
                         Start="install"
                         Stop="both"
