@@ -106,6 +106,7 @@
                         ErrorControl="ignore"
                         Interactive="no">
                         <ServiceDependency Id="HvHost"/>
+                        <ServiceDependency Id="vmms"/>
         </ServiceInstall>
         <ServiceControl Id="StartService"
                         Start="install"
