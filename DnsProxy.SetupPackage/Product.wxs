@@ -104,7 +104,10 @@
                         Start="auto"
                         Account="LocalSystem"
                         ErrorControl="ignore"
-                        Interactive="no"/>
+                        Interactive="no">
+                        <ServiceDependency Id="HvHost"/>
+                        <ServiceDependency Id="vmms"/>
+        </ServiceInstall>
         <ServiceControl Id="StartService"
                         Start="install"
                         Stop="both"
