@@ -20,7 +20,7 @@ namespace DnsProxy
         {
             var servers = new List<DnsServer>();
 
-            var listenerIps = ListenerLocator.GetNatIpAddresses();
+            var listenerIps = ListenerLocator.GetIpAddressesForBinding();
             foreach (var listenerIp in listenerIps)
             {
                 IPAddress ip;
