@@ -8,31 +8,9 @@ namespace DnsProxy
 {
     public partial class Service : ServiceBase
     {
-        private DnsServer[] _servers;
-
         public Service()
         {
             InitializeComponent();
-            InitializeDnsServers();
-        }
-
-        private void InitializeDnsServers()
-        {
-            var servers = new List<DnsServer>();
-
-            var listenerIps = ListenerLocator.GetIpAddressesForBinding();
-            foreach (var listenerIp in listenerIps)
-            {
-                IPAddress ip;
-
-                if (IPAddress.TryParse(listenerIp, out ip))
-                {
-                    var dnsServer = new DnsServer(ip, 10, 10);
-                    dnsServer.QueryReceived += OnQueryReceived;
-                    servers.Add(dnsServer);
-                }
-            }
-            _servers = servers.ToArray();
         }
 
 #if DEBUG
@@ -44,71 +22,28 @@ namespace DnsProxy
 
         protected override void OnStart(string[] args)
         {
-            StartAllServers();
-        }
-
-        private void StartAllServers()
-        {
-            foreach (var dnsServer in _servers)
-            {
-                dnsServer.Start();
-            }
+            ServiceManager.Start();
         }
 
         protected override void OnPause()
         {
-            StopAllServers();
-        }
-
-        private void StopAllServers()
-        {
-            foreach (var dnsServer in _servers)
-            {
-                dnsServer.Stop();
-            }
+            ServiceManager.Stop();
         }
 
         protected override void OnContinue()
         {
-            StartAllServers();
+            ServiceManager.Start();
         }
 
         protected override void OnStop()
         {
-            StopAllServers();
+            ServiceManager.Stop();
         }
 
-        private static async Task OnQueryReceived(object sender, QueryReceivedEventArgs e)
+        protected override void OnShutdown()
         {
-            var message = e.Query as DnsMessage;
-
-            var response = message?.CreateResponseInstance();
-
-            if (message?.Questions.Count == 1)
-            {
-                // send query to upstream _servers
-                var question = message.Questions[0];
-
-                var upstreamResponse = await DnsClient.Default.ResolveAsync(question.Name, question.RecordType, question.RecordClass);
-
-                // if got an answer, copy it to the message sent to the client
-                if (upstreamResponse != null)
-                {
-                    foreach (var record in (upstreamResponse.AnswerRecords))
-                    {
-                        response.AnswerRecords.Add(record);
-                    }
-                    foreach (var record in (upstreamResponse.AdditionalRecords))
-                    {
-                        response.AdditionalRecords.Add(record);
-                    }
-
-                    response.ReturnCode = ReturnCode.NoError;
-
-                    // set the response
-                    e.Response = response;
-                }
-            }
+            ServiceManager.Stop();
+            base.OnShutdown();
         }
     }
 }
